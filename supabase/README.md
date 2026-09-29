@@ -7,7 +7,7 @@ This folder contains the database and private-file permissions for the Trust M p
 1. Create a Supabase project.
 2. Enable **Authentication > Sign In / Providers > Email**.
 3. Run `schema.sql` once in the SQL Editor.
-4. Copy the project URL and public anon key into `../supabase-config.js`.
+4. Connect this Supabase project to the Vercel project, enable Production sync, and redeploy after uploading the portal.
 5. Create the users and add matching `profiles` records.
 6. Add each technician to the right projects in `project_members`.
 
@@ -39,7 +39,7 @@ Roles:
 - `amr_partner` opens `amr.html`, sees project execution and company operating costs, and can add project comments. Owner finance data stays unavailable.
 - `technician` opens `technician.html`, sees assigned projects and submits expense receipts or photos for approval.
 
-The database enforces these rules with Row Level Security. Hiding a button in the browser is not the permission boundary.
+The database enforces these rules with Row Level Security. Hiding a button in the browser is not the permission boundary. The public publishable key is loaded through `/api/config`; the runtime endpoint never returns server secret keys.
 
 ## Private file storage
 

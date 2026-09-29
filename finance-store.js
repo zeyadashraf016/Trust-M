@@ -1,15 +1,19 @@
 (function(root){
   let opening;
-  const live=Boolean(root.TrustAuth?.enabled&&root.TrustAuth?.client);
-  const sb=root.TrustAuth?.client;
   const localKey='trust-m-finance-demo-v2';
+  const isLive=()=>Boolean(root.TrustAuth?.enabled&&root.TrustAuth?.client);
+  const client=()=>root.TrustAuth?.client;
+
+  async function waitForAuth(){
+    if(root.TrustAuth?.ready)await root.TrustAuth.ready;
+  }
 
   function openLocal(){
     return opening??=new Promise((resolve,reject)=>{
       const request=indexedDB.open('trust-m-finance-demo-v1',1);
       request.onupgradeneeded=()=>{
         for(const name of ['records','files']){
-          if(!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name);
+          if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name);
         }
       };
       request.onsuccess=()=>resolve(request.result);
@@ -28,6 +32,17 @@
     });
   }
 
+  async function deleteLocalFile(id){
+    const connection=await openLocal();
+    return new Promise((resolve,reject)=>{
+      const tx=connection.transaction('files','readwrite');
+      tx.objectStore('files').delete(id);
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error);
+      tx.onabort=()=>reject(tx.error||new Error('File cleanup did not complete.'));
+    });
+  }
+
   async function localLoad(){
     const raw=localStorage.getItem(localKey);
     return raw?JSON.parse(raw):null;
@@ -37,14 +52,19 @@
     const current=await localLoad();
     const next=current||structuredClone(root.TrustFinanceSeed);
     mutate(next);
-    localStorage.setItem(localKey,JSON.stringify(next));
-    if(file) await saveLocalFile(file);
+    if(file)await saveLocalFile(file);
+    try{
+      localStorage.setItem(localKey,JSON.stringify(next));
+    }catch(error){
+      if(file)await deleteLocalFile(file.id).catch(()=>{});
+      throw error;
+    }
     return next;
   }
 
   async function remoteRow(){
-    const {data,error}=await sb.from('finance_workspaces').select('state, revision').eq('id','main').maybeSingle();
-    if(error) throw error;
+    const {data,error}=await client().from('finance_workspaces').select('state, revision').eq('id','main').maybeSingle();
+    if(error)throw error;
     return data;
   }
 
@@ -54,6 +74,7 @@
   }
 
   async function remoteUpdate(mutate,file){
+    const sb=client();
     let uploaded=false;
     try{
       for(let attempt=0;attempt<3;attempt++){
@@ -76,12 +97,7 @@
     }
   }
 
-  async function getFile(id){
-    if(live){
-      const {data,error}=await sb.storage.from('trust-m-documents').download(id);
-      if(error) throw error;
-      return data;
-    }
+  async function localFile(id){
     const connection=await openLocal();
     return new Promise((resolve,reject)=>{
       const request=connection.transaction('files').objectStore('files').get(id);
@@ -90,11 +106,18 @@
     });
   }
 
-  root.TrustFinanceStore={
-    mode:live?'supabase':'browser-demo',
-    open:()=>live?Promise.resolve(null):openLocal(),
-    update:live?remoteUpdate:localUpdate,
-    load:live?remoteLoad:localLoad,
-    getFile
+  const store={
+    get mode(){return isLive()?'supabase':'browser-demo';},
+    async open(){await waitForAuth();return isLive()?null:openLocal();},
+    async update(mutate,file){await waitForAuth();return isLive()?remoteUpdate(mutate,file):localUpdate(mutate,file);},
+    async load(){await waitForAuth();return isLive()?remoteLoad():localLoad();},
+    async getFile(id){
+      await waitForAuth();
+      if(!isLive())return localFile(id);
+      const {data,error}=await client().storage.from('trust-m-documents').download(id);
+      if(error)throw error;
+      return data;
+    }
   };
+  root.TrustFinanceStore=store;
 })(globalThis);

@@ -19,7 +19,7 @@ For a new Supabase project:
 
 1. Enable Email/Password authentication.
 2. Run `supabase/schema.sql` once in the Supabase SQL Editor.
-3. Put the project URL and public anon key in `supabase-config.js`.
+3. Connect the Supabase project to the Vercel project and enable Production environment sync.
 4. Create Lamiaa, Amr and technician users in Supabase Auth.
 5. Insert matching `profiles` rows using `lamiaa_owner`, `amr_partner` or `technician`.
 6. Add each technician to their projects in `project_members`.
@@ -29,6 +29,19 @@ For a project where the earlier Trust M schema is already installed, run only:
 `supabase/migration-002-audit-and-technician-receipts.sql`
 
 Do not rerun the full schema on an existing project.
+
+## Vercel environment variables
+
+The SupabaseVercel connection creates the required variables automatically. The runtime endpoint accepts the current integration names:
+
+- `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+Legacy anon-key names are accepted during migration. The Production sync shown in Supabase is sufficient for the live deployment; redeploy Vercel after this code is uploaded. Enable Preview or Development sync only when those environments should use Supabase.
+
+The browser requests public configuration from `/api/config`. Only the Supabase URL and publishable key are returned. Server credentials such as `SUPABASE_SECRET_KEY` may exist in Vercel for server functions, but this endpoint never reads or returns them. Row Level Security remains the permission boundary.
+
+For local live-mode testing, copy `.env.example` to `.env.local`, fill in the two values, and run the project with `vercel dev`. A plain static server cannot read environment variables and therefore stays in review mode. `.env.local` is ignored by Git.
 
 ## Access and workflow
 
@@ -41,7 +54,7 @@ Database Row Level Security is the real permission boundary:
 - Finance saves use revision checks, keep the previous workspace revision and write an append-only audit event.
 - Uploads complete before the finance workspace is saved. If the save fails, the new upload is removed to avoid an orphan file.
 
-The browser uses the Supabase public anon key. Never place the service-role key in this folder.
+The browser receives the Supabase public publishable key through the runtime config endpoint. Never expose the service-role key.
 
 ## Finance features
 
@@ -81,4 +94,4 @@ Replacing repository files does not erase sensitive content from Git history. Do
 
 ## Local preview
 
-Serve this folder with a static web server and open `index.html`. Without Supabase configuration the portal runs in local review mode. Shared records, role login and private uploads begin after Supabase is configured.
+Serve this folder with a static web server and open `index.html` for mock review mode. Use `vercel dev` with a gitignored `.env.local` for live local authentication and records.
