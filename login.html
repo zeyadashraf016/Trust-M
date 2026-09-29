@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ar-EG" dir="rtl" class="auth-pending">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11120f">
+  <title>Trust M | تسجيل الدخول</title>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
+  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js"></script>
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-panel" aria-labelledby="login-title">
+      <div class="login-brand"><span class="logo" role="img" aria-label="Trust M"></span></div>
+      <div class="eyebrow">بوابة فريق Trust M</div><h1 id="login-title">تسجيل الدخول</h1>
+      <p class="finance-note">كل حساب بيفتح اللوحة والصلاحيات المخصصة ليه تلقائيًا.</p>
+      <p class="login-message" id="session-message" hidden></p>
+      <form id="login-form" class="finance-form">
+        <label class="wide">البريد الإلكتروني<input name="email" type="email" autocomplete="email" required></label>
+        <label class="wide">كلمة المرور<span class="password-field"><input name="password" id="password" type="password" autocomplete="current-password" required><button type="button" id="toggle-password" class="ghost-button" aria-pressed="false">إظهار</button></span></label>
+        <p id="login-status" class="wide form-error" role="alert" hidden></p>
+        <div class="login-actions wide"><button class="gold-button" type="submit">ادخل البوابة</button><button class="ghost-button" id="forgot-password" type="button">نسيت كلمة المرور</button></div>
+      </form>
+      <p class="login-help">لو الحساب متوقف أو الصلاحية مش صحيحة، تواصل مع لمياء.</p>
+    </section>
+  </main>
+  <script src="login.js"></script>
+</body>
+</html>

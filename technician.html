@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar-EG" dir="rtl" class="auth-pending" data-required-role="technician">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11120f">
+  <title>Trust M | لوحة الفني</title>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
+  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js"></script>
+</head>
+<body class="technician-page">
+  <header class="topbar"><a class="brand" href="#assignments" aria-label="Trust M"><span class="logo"></span></a><nav><button class="quiet-button auth-only" data-sign-out>تسجيل الخروج</button></nav></header>
+  <main class="technician-dashboard">
+    <section class="hero-panel"><div><div class="eyebrow latin-text">TECHNICIAN WORKSPACE</div><h1 id="technician-title">مشروعاتك</h1><p>تابع المرحلة الحالية، وسجّل أي مصروف بصورة الإيصال عشان لمياء تراجعه وتعتمده.</p></div></section>
+    <p class="demo-notice" id="technician-mode" hidden></p>
+    <section class="panel" id="assignments"><div class="section-top"><div><div class="eyebrow">التكليفات</div><h2>المشروعات المسندة ليك</h2></div></div><div class="document-grid" id="technician-projects"><article class="document-card"><small>تحميل</small><h3>بنفتح تكليفاتك…</h3></article></div></section>
+    <section class="panel technician-upload" id="add-receipt">
+      <div class="section-top"><div><div class="eyebrow">مصروف جديد</div><h2>ضيف إيصال أو صورة</h2><p class="finance-note">المصروف بيفضل «معلّق» لحد ما لمياء تراجعه. اعتماده هو اللي يضيفه للحسابات.</p></div></div>
+      <form id="technician-receipt-form" class="finance-form">
+        <label>المشروع<select name="project" id="receipt-project" required></select></label>
+        <label>تاريخ المصروف<input name="date" type="date" required></label>
+        <label>القيمة بالجنيه<input name="amount" type="number" min="0.01" max="999999999999" step="0.01" required></label>
+        <label>الفئة<select name="category" required><option>خامات</option><option>مواصلات</option><option>معدات</option><option>عمالة مساعدة</option><option>مصروف تاني</option></select></label>
+        <label class="wide">البيان<textarea name="notes" rows="3" maxlength="500" required placeholder="اكتب اشتريت إيه أو المصروف كان ليه"></textarea></label>
+        <label class="wide receipt-file-label">صورة الإيصال أو PDF<input name="file" type="file" accept="image/*,application/pdf" capture="environment" required><span>صورة أو PDF لحد 10 ميجا</span></label>
+        <p class="form-error wide" id="receipt-error" role="alert"></p>
+        <div class="form-actions"><button class="gold-button" type="submit">ابعت للمراجعة</button></div>
+      </form>
+    </section>
+    <section class="panel" id="submissions"><div class="section-top"><div><div class="eyebrow">متابعة</div><h2>الإيصالات اللي بعتها</h2></div><button class="quiet-button" id="refresh-submissions" type="button">حدّث</button></div><div id="submission-list"></div></section>
+  </main>
+  <nav class="tech-bottom-nav" aria-label="تنقل سريع"><a href="#assignments">مشروعاتي</a><a href="#add-receipt">ضيف إيصال</a><a href="#submissions">المتابعة</a></nav>
+  <script src="technician.js"></script>
+</body>
+</html>

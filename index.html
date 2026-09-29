@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar-EG" dir="rtl" class="auth-pending" data-required-role="lamiaa_owner">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#11120f">
+  <meta name="description" content="بوابة Trust M لإدارة المشروعات والحسابات.">
+  <title>Trust M | لوحة لمياء</title>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css">
+  <script src="assets/supabase-2.49.4.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body class="owner-dashboard">
+  <div id="loader" role="status" aria-label="بنفتح لوحة Trust M">
+    <div class="loading-inner"><div class="logo loading-logo" role="img" aria-label="شعار Trust M"></div><div class="loading-rule"></div><p>لوحة الإدارة</p></div>
+  </div>
+  <header>
+    <a href="#overview" class="brand" aria-label="Trust M"><span class="logo"></span></a>
+    <nav aria-label="أقسام لوحة الإدارة">
+      <a href="#overview" class="active">نظرة عامة</a>
+      <a href="#projects">المشروعات <span id="nav-project-count">0</span></a>
+      <a href="finance.html">الحسابات</a>
+      <a href="#cashflow">السيولة</a>
+      <a href="#technicians">الفنيين</a>
+      <button class="nav-action auth-only" type="button" data-sign-out>تسجيل الخروج</button>
+    </nav>
+    <div class="owner"><span>صلاحية المالك</span><b>ل</b></div>
+  </header>
+  <main id="overview">
+    <div class="heading">
+      <div><div class="eyebrow latin-text">TRUST M · MANAGEMENT PORTAL</div><h1 id="owner-greeting">أهلًا يا لمياء<span>.</span></h1><p>متابعة واضحة للمشروعات والحسابات من أول خطوة لحد التسليم.</p></div>
+      <div class="date" id="current-date"></div>
+    </div>
+    <p class="demo-notice" id="dashboard-mode" hidden></p>
+    <section class="kpis" aria-label="مؤشرات المحفظة" id="kpis"></section>
+    <div class="overview-grid">
+      <section class="panel" id="financials">
+        <div class="section-top"><div><div class="eyebrow">الصورة المالية</div><h2>ملخص الحسابات</h2></div><span class="subtle">لحد دلوقتي</span></div>
+        <div class="finance-layout"><div class="donut" id="collection-donut"><div><strong id="collection-rate">0<span>%</span></strong><small>تم تحصيله</small></div></div><div class="financial-list" id="financial-list"></div></div>
+        <div class="finance-foot" id="finance-foot"></div>
+      </section>
+      <section class="panel" id="cashflow">
+        <div class="section-top"><div><div class="eyebrow">حركة السيولة</div><h2>الشهر الحالي</h2></div><span class="subtle" id="cash-month"></span></div>
+        <div class="forecast-table">
+          <div class="table-head"><span>الحركة المسجلة</span><span>القيمة</span></div>
+          <div><span><i class="dot gold-dot"></i>تحصيلات العملاء</span><strong id="month-collected">0</strong></div>
+          <div><span><i class="dot gray-dot"></i>المدفوعات والتكاليف</span><strong id="month-outgoing">0</strong></div>
+          <div class="net"><span>صافي الحركة</span><strong id="month-net">0</strong></div>
+        </div>
+        <div class="risk-note"><span>!</span><div><strong>قراءة سريعة</strong><p id="cash-note">بنحسب حركة الشهر من السجلات الفعلية.</p></div></div>
+      </section>
+    </div>
+    <div class="lower-grid">
+      <div>
+        <section class="panel chart-panel">
+          <div class="section-top"><div><div class="eyebrow">آخر 6 شهور</div><h2>التحصيلات والمدفوعات</h2></div><div class="legend"><span><i class="dot gold-dot"></i>تحصيل</span><span><i class="dot gray-dot"></i>مدفوع</span></div></div>
+          <div class="bars" id="bars" aria-label="حركة التحصيل والمدفوعات في آخر ست شهور"></div>
+          <p class="footnote">القيم بالجنيه المصري</p>
+        </section>
+        <section id="projects">
+          <div class="section-top project-title"><div><div class="eyebrow">كل مشروع في مكانه</div><h2>ملخص المشروعات <span class="count" id="project-count">0</span></h2></div><span class="subtle" id="project-subtitle"></span></div>
+          <div id="project-list"></div>
+        </section>
+        <section id="technicians" class="panel technician-owner-section">
+          <div class="section-top"><div><div class="eyebrow">فريق التنفيذ</div><h2>توزيع الفنيين</h2></div><span class="subtle" id="technician-count"></span></div>
+          <div id="technician-list"></div>
+        </section>
+      </div>
+      <aside>
+        <section class="panel attention" id="attention-panel"><div class="section-top"><h2>محتاج متابعة</h2><span class="alert-count" id="alert-count">0</span></div><div id="attention-list"></div></section>
+        <section class="panel balances"><div class="eyebrow">أرصدة العملاء</div><h2>المتبقي للتحصيل</h2><div id="balance-chart"></div><div class="balance-total"><span>إجمالي المتبقي</span><strong id="balance-total">0</strong></div></section>
+      </aside>
+    </div>
+    <footer><span class="latin-text">TRUST M <small>OWNER PORTAL</small></span><p id="footer-date"></p><button id="replay" type="button">عرض الشعار تاني</button></footer>
+  </main>
+  <script src="dashboard-data.js"></script><script src="project-comments.js"></script>
+  <script src="owner-dashboard.js"></script>
+</body>
+</html>

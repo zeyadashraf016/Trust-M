@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar-EG" dir="rtl" class="auth-pending" data-required-role="amr_partner">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#11120f"><meta name="description" content="لوحة عمرو لمتابعة مشروعات ومصروفات تشغيل Trust M.">
+  <title>Trust M | لوحة عمرو</title>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
+  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js"></script>
+</head>
+<body class="amr-dashboard">
+  <div id="loader" role="status" aria-label="بنفتح لوحة عمرو"><div class="loading-inner"><div class="logo loading-logo" role="img" aria-label="شعار Trust M"></div><div class="loading-rule"></div><p>لوحة عمرو</p></div></div>
+  <header><a href="#overview" class="brand" aria-label="Trust M"><span class="logo"></span></a><nav class="compact-nav" aria-label="أقسام لوحة عمرو"><a href="#overview" class="active">نظرة عامة</a><a href="#projects">المشروعات <span id="amr-project-count">0</span></a><a href="#operations">مصروفات التشغيل</a><button class="nav-action auth-only" type="button" data-sign-out>تسجيل الخروج</button></nav><div class="owner"><span>عرض ومتابعة</span><b>ع</b></div></header>
+  <main id="overview">
+    <div class="heading"><div><div class="eyebrow latin-text">TRUST M · PARTNER PORTAL</div><h1 id="amr-greeting">أهلًا يا عمرو<span>.</span></h1><p>متابعة تقدم كل مشروع ومصروفات تشغيل الشركة من مكان واحد.</p></div><div class="date" id="amr-date"></div></div>
+    <p class="demo-notice" id="amr-mode" hidden></p>
+    <section id="operations" class="panel" data-no-translate><p>بنفتح مصروفات التشغيل…</p></section>
+    <section id="projects">
+      <div class="section-top project-title"><div><div class="eyebrow">المشروعات</div><h2>متابعة التنفيذ</h2></div><span class="subtle" id="amr-project-subtitle"></span></div>
+      <div id="amr-project-list"></div>
+    </section>
+    <footer><span class="latin-text">TRUST M <small>PARTNER PORTAL</small></span><p id="amr-footer-date"></p><button id="replay" type="button">عرض الشعار تاني</button></footer>
+  </main>
+  <script src="dashboard-data.js"></script><script src="project-comments.js"></script><script src="amr-dashboard.js"></script>
+  <script src="finance-model.js"></script><script src="finance-seed.js"></script><script src="finance-store.js"></script><script src="receipts.js"></script><script src="operations.js"></script>
+</body>
+</html>
