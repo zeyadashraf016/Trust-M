@@ -3,7 +3,7 @@
 
 create extension if not exists pgcrypto;
 
-create type public.trust_role as enum ('lamiaa_owner', 'amr_partner', 'technician');
+create type public.trust_role as enum ('lamiaa_owner', 'amr_partner', 'technician', 'client');
 create type public.project_status as enum ('planning', 'active', 'on_hold', 'completed', 'cancelled');
 create type public.money_direction as enum ('client_receipt', 'supplier_payment', 'technician_payment', 'project_expense', 'client_charge', 'overhead_expense');
 create type public.document_type as enum ('supplier_invoice', 'technician_receipt', 'internal_expense_pdf', 'client_statement', 'quotation', 'other');
@@ -20,6 +20,7 @@ create table public.profiles (
 
 create table public.clients (
   id uuid primary key default gen_random_uuid(),
+  auth_user_id uuid unique references public.profiles(id) on delete set null,
   display_name text not null,
   phone text,
   email text,
@@ -613,3 +614,70 @@ create policy project_comments_management_read on public.project_comments
   for select using (public.is_owner_or_partner());
 create policy project_comments_management_insert on public.project_comments
   for insert with check (public.is_owner_or_partner() and author_id = auth.uid());
+
+
+-- Restricted client portal: returns project progress and contract value,
+-- never internal costs, supplier payments, or forecast profit.
+create or replace function public.get_client_portal_projects()
+returns table (
+  id uuid,
+  project_name text,
+  project_code text,
+  location text,
+  status public.project_status,
+  current_phase text,
+  next_phase text,
+  start_date date,
+  target_end_date date,
+  total_contract_value numeric,
+  progress_percent integer,
+  phases jsonb
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    project.id,
+    project.project_name,
+    project.project_code,
+    project.location,
+    project.status,
+    project.current_phase,
+    project.next_phase,
+    project.start_date,
+    project.target_end_date,
+    project.total_contract_value,
+    coalesce((
+      select round(avg(phase.progress_percent))::integer
+      from public.project_phases phase
+      where phase.project_id = project.id
+    ), 0),
+    coalesce((
+      select jsonb_agg(
+        jsonb_build_object(
+          'name', phase.phase_name,
+          'from', phase.starts_on,
+          'to', phase.ends_on,
+          'progress', phase.progress_percent,
+          'status', case
+            when phase.progress_percent >= 100 then 'complete'
+            when phase.progress_percent > 0 then 'in_progress'
+            else 'planned'
+          end
+        )
+        order by phase.sort_order
+      )
+      from public.project_phases phase
+      where phase.project_id = project.id
+    ), '[]'::jsonb)
+  from public.clients client
+  join public.projects project on project.client_id = client.id
+  where public.current_role()::text = 'client'
+    and client.auth_user_id = auth.uid()
+  order by project.created_at desc;
+$$;
+
+revoke all on function public.get_client_portal_projects() from public;
+grant execute on function public.get_client_portal_projects() to authenticated;

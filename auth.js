@@ -1,5 +1,5 @@
 (function(){
-  const roleRoutes={lamiaa_owner:'index.html',amr_partner:'amr.html',technician:'technician.html'};
+  const roleRoutes={lamiaa_owner:'index.html',amr_partner:'amr.html',technician:'technician.html',client:'client.html'};
   const pageRole=document.documentElement.dataset.requiredRole;
   const loginPage=/\/(login\.html|login)\/?$/.test(location.pathname);
   const localReview=['localhost','127.0.0.1',''].includes(location.hostname)||location.protocol==='file:';
@@ -14,6 +14,7 @@
     async signIn(email,password){
       await bootstrap();
       if(!sb)throw new Error(api.configError?'CONFIG_UNAVAILABLE':'NOT_CONFIGURED');
+      await sb.auth.signOut({scope:'local'}).catch(()=>{});
       const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;
       const profile=await profileFor(data.user.id);
       location.replace(pathFor(roleRoutes[profile.role]||'login.html'));
@@ -81,7 +82,8 @@
       location.replace(pathFor('login.html?reason=session'));return null;
     }
     const profile=await profileFor(session.user.id),route=roleRoutes[profile.role]||'login.html';
-    if(loginPage||(pageRole&&profile.role!==pageRole)){location.replace(pathFor(route));return null;}
+    if(loginPage){reveal(profile);return profile;}
+    if(pageRole&&profile.role!==pageRole){location.replace(pathFor(route));return null;}
     reveal(profile);return profile;
   }
 

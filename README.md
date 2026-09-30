@@ -9,6 +9,7 @@ This folder is the complete static portal. Upload its contents to the root of th
 - `finance.html`: Lamiaa financial workspace and technician receipt approvals.
 - `amr.html`: Amr project overview, operating-cost workspace and project comments. Client accounts and owner finance tools are excluded.
 - `technician.html`: assigned projects and receipt/photo submission.
+- `client.html`: restricted client project-progress portal with no internal cost or profit data.
 - `print-document.html`: secure printable internal expense document.
 
 The interface is right-to-left Egyptian Arabic. Review mode is clearly labelled and contains mock records only.
@@ -20,15 +21,19 @@ For a new Supabase project:
 1. Enable Email/Password authentication.
 2. Run `supabase/schema.sql` once in the Supabase SQL Editor.
 3. Connect the Supabase project to the Vercel project and enable Production environment sync.
-4. Create Lamiaa, Amr and technician users in Supabase Auth.
-5. Insert matching `profiles` rows using `lamiaa_owner`, `amr_partner` or `technician`.
+4. Create Lamiaa, Amr, technician and client users in Supabase Auth.
+5. Insert matching `profiles` rows using `lamiaa_owner`, `amr_partner`, `technician` or `client`.
 6. Add each technician to their projects in `project_members`.
 
 For a project where the earlier Trust M schema is already installed, run only:
 
 `supabase/migration-002-audit-and-technician-receipts.sql`
 
-Do not rerun the full schema on an existing project.
+Then run:
+
+`supabase/migration-003-client-portal.sql`
+
+Do not rerun the full schema on an existing project. Use `supabase/assign-login-profiles.example.sql` as a private template for mapping Auth users to roles.
 
 ## Vercel environment variables
 
@@ -50,6 +55,7 @@ Database Row Level Security is the real permission boundary:
 - Lamiaa manages projects, finance, quotations, documents, approvals and users.
 - Amr can view project progress and company operating costs, and add append-only project comments or follow-up flags. He cannot create client accounts or read the owner finance workspace.
 - Technicians see assigned projects only. They can upload an expense receipt or site photo to a private Storage bucket.
+- Clients receive a dedicated portal backed by a restricted database function. It returns their own project progress and contract value, never internal costs, supplier payments or forecast profit.
 - Lamiaa approves or rejects each technician submission. Approval writes a project expense and an audit event.
 - Finance saves use revision checks, keep the previous workspace revision and write an append-only audit event.
 - Uploads complete before the finance workspace is saved. If the save fails, the new upload is removed to avoid an orphan file.

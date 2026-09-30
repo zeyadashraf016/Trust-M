@@ -13,11 +13,12 @@ This folder contains the database and private-file permissions for the Trust M p
 
 ## Upgrade an existing Trust M database
 
-If the earlier Trust M schema is already installed, do not rerun `schema.sql`. Run only:
+If the earlier Trust M schema is already installed, do not rerun `schema.sql`. Run these migrations in order:
 
-`migration-002-audit-and-technician-receipts.sql`
+1. `migration-002-audit-and-technician-receipts.sql`
+2. `migration-003-client-portal.sql`
 
-It adds workspace history, the append-only audit log, technician receipt approvals, project comments and their private Storage permissions.
+They add workspace history, the append-only audit log, technician receipt approvals, project comments, client portal access and private Storage permissions.
 
 ## Users and roles
 
@@ -38,6 +39,9 @@ Roles:
 - `lamiaa_owner` opens `index.html` and manages projects, client accounts, finance, quotations, documents and technician approvals.
 - `amr_partner` opens `amr.html`, sees project execution and company operating costs, and can add project comments. Owner finance data stays unavailable.
 - `technician` opens `technician.html`, sees assigned projects and submits expense receipts or photos for approval.
+- `client` opens `client.html` and receives only their linked projects through a restricted RPC. Internal costs and profit are excluded.
+
+Use `assign-login-profiles.example.sql` as a template, but keep the completed file with real Auth user IDs outside Git.
 
 The database enforces these rules with Row Level Security. Hiding a button in the browser is not the permission boundary. The public publishable key is loaded through `/api/config`; the runtime endpoint never returns server secret keys.
 
