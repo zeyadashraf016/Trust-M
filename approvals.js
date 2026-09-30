@@ -1,7 +1,7 @@
 (async function(){
   const profile=await window.TrustAuth.ready;
   const panel=document.querySelector('#technician-approvals');
-  if(!panel||!window.TrustAuth.enabled||!profile)return;
+  if(!panel||!window.TrustAuth.enabled||!profile||profile.role!=='lamiaa_owner')return;
   const sb=window.TrustAuth.client,esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])),fmt=value=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:2}).format(Number(value||0));
   panel.hidden=false;await load();
 

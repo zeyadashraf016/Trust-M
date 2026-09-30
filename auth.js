@@ -1,7 +1,7 @@
 (function(){
-  const roleRoutes={lamiaa_owner:'index.html',amr_partner:'amr.html',technician:'technician.html',client:'client.html'};
+  const roleRoutes={lamiaa_owner:'index.html',accountant:'accounting.html',amr_partner:'amr.html',technician:'technician.html',client:'client.html'};
   const pageRole=document.documentElement.dataset.requiredRole;
-  const loginPage=/\/(login\.html|login)\/?$/.test(location.pathname);
+  const loginPage=/\/(login(?:\.html)?|activate-account(?:\.html)?)\/?$/.test(location.pathname);
   const localReview=['localhost','127.0.0.1',''].includes(location.hostname)||location.protocol==='file:';
   let sb=null,bootstrapPromise=null;
 
@@ -17,6 +17,7 @@
       await sb.auth.signOut({scope:'local'}).catch(()=>{});
       const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;
       const profile=await profileFor(data.user.id);
+      if(profile.role==='client'&&await requiresContract()){location.replace(pathFor('contract.html'));return;}
       location.replace(pathFor(roleRoutes[profile.role]||'login.html'));
     },
     async resetPassword(email){
@@ -65,6 +66,12 @@
     document.documentElement.classList.remove('auth-pending');
   }
 
+  async function requiresContract(){
+    const {data,error}=await sb.rpc('get_client_contract_gate');
+    if(error)throw error;
+    return !data?.allowed;
+  }
+
   async function redirectForSession(){
     await bootstrap();
     if(!api.enabled){
@@ -72,6 +79,7 @@
         if(loginPage){reveal(null);return null;}
         location.replace(pathFor('login.html?reason=config'));return null;
       }
+      if(pageRole==='client'&&!/\/contract(?:\.html)?\/?$/.test(location.pathname)&&!sessionStorage.getItem('trust-m-demo-contract-signed')){location.replace(pathFor('contract.html'));return null;}
       const demo={role:pageRole||'demo',full_name:'مستخدم تجريبي',demo:true};
       reveal(demo);return demo;
     }
@@ -83,7 +91,11 @@
     }
     const profile=await profileFor(session.user.id),route=roleRoutes[profile.role]||'login.html';
     if(loginPage){reveal(profile);return profile;}
-    if(pageRole&&profile.role!==pageRole){location.replace(pathFor(route));return null;}
+    if(pageRole&&!pageRole.split(',').includes(profile.role)){location.replace(pathFor(route));return null;}
+    if(profile.role==='client'&&!/\/contract(?:\.html)?\/?$/.test(location.pathname)){
+      try{if(await requiresContract()){location.replace(pathFor('contract.html'));return null;}}
+      catch(error){console.error('Contract check failed',error);location.replace(pathFor('contract.html'));return null;}
+    }
     reveal(profile);return profile;
   }
 

@@ -1,0 +1,40 @@
+(async function(){
+  const profile=await window.TrustAuth.ready;if(!profile)return;
+  const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const live=window.TrustAuth.enabled;let contracts=[],active,drawing=false,strokes=[],currentStroke,saving=false;
+  const chooser=document.createElement('select');chooser.id='contract-chooser';chooser.setAttribute('aria-label','اختيار عقد للمراجعة');$('#contract-reference').after(chooser);chooser.onchange=()=>{show(contracts.find(c=>c.id===chooser.value));$('#clear-signature').click();$('#typed-signature').value='';$('#contract-consent').checked=false;};
+  const canvas=$('#signature-canvas'),ctx=canvas.getContext('2d');ctx.lineWidth=2.5;ctx.lineCap='round';ctx.strokeStyle='#273322';
+  function point(e){const r=canvas.getBoundingClientRect();return [Math.max(0,Math.min(600,Math.round((e.clientX-r.left)*600/r.width))),Math.max(0,Math.min(240,Math.round((e.clientY-r.top)*240/r.height)))];}
+  canvas.onpointerdown=e=>{e.preventDefault();drawing=true;currentStroke=[point(e)];canvas.setPointerCapture(e.pointerId);$('#signature-hint').hidden=true;};
+  canvas.onpointermove=e=>{if(!drawing)return;const p=point(e),last=currentStroke.at(-1);ctx.beginPath();ctx.moveTo(...last);ctx.lineTo(...p);ctx.stroke();currentStroke.push(p);};
+  function endStroke(){if(drawing&&currentStroke.length>1)strokes.push(currentStroke);drawing=false;$('#signature-hint').hidden=strokes.length>0;}
+  canvas.onpointerup=endStroke;canvas.onpointercancel=endStroke;
+  $('#clear-signature').onclick=()=>{strokes=[];ctx.clearRect(0,0,600,240);$('#signature-hint').hidden=false;};
+  function renderBody(body){
+    const lines=body.split('\n'),groups=[];let group={title:'بيانات الأطراف والتمهيد',lines:[]};
+    for(const line of lines.slice(1)){if(/^(البند .+?:|ملحق رقم)/.test(line)){groups.push(group);group={title:line,lines:[]};}else group.lines.push(line);}
+    groups.push(group);return groups.map((g,i)=>'<details '+(i===0?'open':'')+'><summary>'+esc(g.title)+'</summary>'+g.lines.filter(Boolean).map(l=>'<p>'+esc(l)+'</p>').join('')+'</details>').join('');
+  }
+  function show(contract){
+    active=contract;$('#contract-layout').hidden=false;$('#contract-title').textContent=contract.title;
+    chooser.value=contract.id;
+    $('#contract-reference').textContent='مرجع العقد: '+contract.id+' · الإصدار: '+contract.version;
+    const d=contract.details||{};$('#contract-details').innerHTML=Object.entries(d).map(([k,v])=>'<div><small>'+esc(k)+'</small><strong>'+esc(v)+'</strong></div>').join('');
+    $('#contract-body').innerHTML=renderBody(contract.body);
+    if(contract.future_forms){const text=contract.future_forms,split=text.indexOf('ملحق رقم (3)'),headers=['البند','الخامة/الصنف','الشركة/الماركة','اللون/المقاس','مكان الاستخدام','تاريخ الاعتماد','توقيع الطرف الأول'];$('#contract-body').insertAdjacentHTML('beforeend','<details><summary>نماذج اعتماد الخامات والاستلام اللاحق</summary><p>هذه نماذج تُستكمل وتُعتمد عند الوصول إلى مراحلها. لا تمثل محاضر استلام أو اعتمادات موقّعة حاليًا.</p><h3>ملحق رقم (2): جدول اعتماد الخامات والعينات</h3><table><caption>نموذج اعتماد الخامات</caption><thead><tr>'+headers.map(h=>'<th scope="col">'+h+'</th>').join('')+'</tr></thead><tbody>'+[1,2,3,4,5].map(n=>'<tr><td>'+n+'</td>'+headers.slice(1).map(()=>'<td>—</td>').join('')+'</tr>').join('')+'</tbody></table><p>'+esc(split>=0?text.slice(split):text)+'</p></details>');}
+    $('#signer-name').value=contract.client_name||profile.full_name;$('#signature-form').hidden=!!contract.acceptance;$('#contract-complete').hidden=!contract.acceptance;$('#signed-record').hidden=!contract.acceptance;
+    if(contract.acceptance){const a=contract.acceptance;$('#signed-record').innerHTML='<h3>سجل توقيع العميل</h3><p>'+esc(a.signer_name)+' · '+esc(new Intl.DateTimeFormat('ar-EG',{dateStyle:'long',timeStyle:'short',timeZone:'Africa/Cairo'}).format(new Date(a.signed_at)))+'</p><p>مرجع التوقيع: '+esc(a.id)+'</p>'+(a.signature.kind==='typed'?'<p>'+esc(a.signature.text)+'</p>':'<img id="signed-image" alt="توقيع العميل">');if(a.signature.kind==='drawn'){ctx.clearRect(0,0,600,240);for(const s of a.signature.strokes){ctx.beginPath();ctx.moveTo(...s[0]);for(const p of s.slice(1))ctx.lineTo(...p);ctx.stroke();}$('#signed-image').src=canvas.toDataURL('image/png');}}
+    $('#next-contract').hidden=!contracts.some(c=>!c.acceptance);$('#next-contract').onclick=()=>{show(contracts.find(c=>!c.acceptance));$('#clear-signature').click();};
+  }
+  $('#print-contract').onclick=()=>{const details=[...$('#contract-body').querySelectorAll('details')],state=details.map(d=>d.open);details.forEach(d=>d.open=true);const restore=()=>details.forEach((d,i)=>d.open=state[i]);window.addEventListener('afterprint',restore,{once:true});window.print();};
+  async function load(){
+    if(live){const {data,error}=await window.TrustAuth.client.rpc('get_client_contracts');if(error)throw error;contracts=data||[];}
+    else{const t=await fetch('contract-template.json').then(r=>r.json()),values=Object.fromEntries(t.fields.map(f=>[f.key,f.default||'بيانات تجريبية — تُحدد في العقد الفعلي']));Object.assign(values,{client_name:'عميل تجريبي',property_address:'عنوان مشروع تجريبي',property_description:'وحدة سكنية تجريبية',fee:'٢٥٬٠٠٠ جنيه مصري (خمسة وعشرون ألف جنيه)',company_name:'شركة تجريبية',contract_date:'30/09/2026',contract_day:'الأربعاء'});const body=t.body.replace(/\{\{(\w+)\}\}/g,(_,k)=>values[k]||'بيانات تجريبية');let acceptance;try{acceptance=JSON.parse(sessionStorage.getItem('trust-m-demo-contract-record')||'null');}catch{}contracts=[{id:'DEMO-AGREEMENT',version:t.version,title:t.title,body,client_name:values.client_name,details:{'العميل':values.client_name,'المشروع':'مشروع تجريبي','الأتعاب':values.fee,'الشركة':values.company_name},future_forms:t.futureForms,acceptance}];}
+    if(!contracts.length){$('#contract-message').textContent='عقدك قيد التجهيز. تواصل مع فريق Trust M لاستكماله؛ ستفتح بوابتك بعد اعتماد العقد وتوقيعه.';return;}
+    chooser.hidden=contracts.length<2;chooser.innerHTML=contracts.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.version)+' · '+esc(c.details?.['المشروع']||c.title)+' · '+(c.acceptance?'موقّع':'بانتظار التوقيع')+'</option>').join('');
+    $('#contract-message').hidden=live;$('#contract-message').textContent='وضع مراجعة تجريبي. هذا التوقيع لا ينشئ عقدًا فعليًا ولا يُحفظ في حساب حقيقي.';
+    show(contracts.find(c=>!c.acceptance)||contracts[0]);
+  }
+  $('#signature-form').onsubmit=async e=>{e.preventDefault();if(saving)return;const signer=$('#signer-name').value.trim(),typed=$('#typed-signature').value.trim();if(signer.length<3||!$('#contract-consent').checked){$('#sign-status').textContent='أدخل اسمك بالكامل وأكد موافقتك.';return;}if(!strokes.length&&typed.length<3){$('#sign-status').textContent='ارسم توقيعك أو اكتب اسمك كتوقيع أولًا.';return;}const signature=strokes.length?{kind:'drawn',strokes}:{kind:'typed',text:typed};saving=true;$('#sign-contract').disabled=true;$('#sign-status').textContent='جارٍ حفظ توقيعك…';try{if(live){const {error}=await window.TrustAuth.client.rpc('sign_client_contract',{p_contract_id:active.id,p_version:active.version,p_signer_name:signer,p_signature:signature,p_consent:true});if(error)throw error;}else{const a={id:'DEMO-SIGNATURE',signer_name:signer,signature,signed_at:new Date().toISOString()};sessionStorage.setItem('trust-m-demo-contract-record',JSON.stringify(a));sessionStorage.setItem('trust-m-demo-contract-signed','1');}await load();$('#sign-status').textContent='';}catch(error){console.error(error);$('#sign-status').textContent='تعذر حفظ التوقيع. تحقق من اتصالك وأعد المحاولة. إذا تغير العقد، أعد تحميل الصفحة لمراجعة الإصدار الجديد.';}finally{saving=false;$('#sign-contract').disabled=false;}};
+  try{await load();}catch(error){console.error(error);$('#contract-message').textContent='تعذر تحميل العقد. أعد تحميل الصفحة أو تواصل مع فريق Trust M. لا يمكن فتح البوابة حتى يتم التحقق من التوقيع.';}
+})();

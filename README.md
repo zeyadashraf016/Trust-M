@@ -10,6 +10,11 @@ This folder is the complete static portal. Upload its contents to the root of th
 - `amr.html`: Amr project overview, operating-cost workspace and project comments. Client accounts and owner finance tools are excluded.
 - `technician.html`: assigned projects and receipt/photo submission.
 - `client.html`: restricted client project-progress portal with no internal cost or profit data.
+- `client.html`: client home tab with financial summary, current and next phase, progress, cost-to-date and latest approved site update.
+- `accounting.html`: MVP accounting workspace for the owner and Ashraf Osama, including Excel preview/import, editable financial records, partner statements, expense-share reports and P&L.
+- `partner-account.html`: read-only Amr statement and expense-share view.
+- `contract.html`: required client contract review, drawn or typed signature, archive and print/PDF.
+- `contracts-admin.html`: Lamiaa's contract preparation, issue and signature history screen.
 - `print-document.html`: secure printable internal expense document.
 
 The interface is right-to-left Egyptian Arabic. Review mode is clearly labelled and contains mock records only.
@@ -32,6 +37,39 @@ For a project where the earlier Trust M schema is already installed, run only:
 Then run:
 
 `supabase/migration-003-client-portal.sql`
+
+Then run `supabase/migration-004-client-contracts.sql`. For a new installation run
+`schema.sql` followed by migration 004 (002 and 003 are already incorporated in the schema).
+Migration 004 is a one-time migration, including the rename of the old project RPC.
+
+## Client contract setup
+
+Open **عقود العملاء** from the owner dashboard. Select a linked client and project.
+Client name/contact, project location, date, company template name and fixed clauses
+fill automatically. Save company defaults once to reuse legal company information,
+registration, address, representatives and contact details across future contracts.
+Complete client identity, supervision
+fee, unit details and all remaining template fields. Use “لا يوجد” for inapplicable
+optional details. The supervision fee is deliberately separate from total project value.
+Update the text, resolve the highlighted source inconsistencies, review the preview,
+confirm company approval and issue. The issued document is an immutable snapshot.
+Any additional issued agreement requires another signature before portal access.
+Do not issue replacement drafts casually: this release does not revoke issued contracts.
+
+The source contract's 32 clauses and unit assignment annex are retained. Original
+client and property identifiers are replaced with template fields. Blank material
+approval and handover annexes are shown as future templates, never completed records.
+Drawn signatures are stored as validated coordinates; typed signatures are also supported.
+Acceptance saves authenticated signer ID, entered name, server time, contract/version
+and an audit record in Supabase. Clients cannot write acceptance rows directly, change
+issued contracts, or retrieve project progress until all issued contracts are signed.
+“عقودي” opens signed records for review and browser print/save as PDF.
+
+Review mode uses fictional contract details and session-only mock signatures. It does
+not create real agreements. Live operation requires migration 004 and issued contracts.
+Local verification covered desktop/mobile, both signature modes, required consent,
+reload, print, admin autofill and simulated backend failure/pending/signed states.
+Database migration execution still needs verification in your Supabase environment.
 
 Do not rerun the full schema on an existing project. Use `supabase/assign-login-profiles.example.sql` as a private template for mapping Auth users to roles.
 
@@ -61,6 +99,31 @@ Database Row Level Security is the real permission boundary:
 - Uploads complete before the finance workspace is saved. If the save fails, the new upload is removed to avoid an orphan file.
 
 The browser receives the Supabase public publishable key through the runtime config endpoint. Never expose the service-role key.
+
+## Client home tab
+
+Run `supabase/migration-006-client-overview.sql` after migration 005. It adds the
+client overview RPC and approved site-update records. The home tab keeps internal
+cost breakdowns private while showing the last recorded payment, current client
+balance, next due date when entered, current and next phases, overall progress,
+cost-to-date, target delivery and the latest approved site image or update caption.
+If no update image exists, the panel explains that clearly instead of showing an
+empty box. The existing project detail cards remain below the overview.
+
+## Accounting MVP and Excel imports
+
+Ashraf Osama is prepared as the accountant account: `ashraf@gmail.com`. The owner can
+use the provisioning button after deployment, or run `supabase/accountant-account.sql`
+after inviting that email in Supabase Auth. Ashraf chooses his password from the
+activation link; no password is stored in the project.
+
+Run `supabase/migration-005-accounting-import.sql` after migration 004. It adds the
+`accountant` role, shared editable accounting access, import provenance and duplicate
+checks. The page accepts `.xlsx` workbooks matching the supplied Amr account, partner
+expense-share, and project receipts/expenses layouts. It previews sheets and mappings,
+flags missing dates and mismatched shares, ignores total rows, and keeps source sheet
+and row references when importing. Project cash receipts remain separate from earned
+revenue, while partner expense shares do not create a second expense.
 
 ## Finance features
 

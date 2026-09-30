@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ar-EG" dir="rtl" class="auth-pending" data-required-role="client">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trust M | مراجعة وتوقيع العقد</title>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="contract.css">
+  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js?v=20261001"></script>
+</head>
+<body class="contract-page">
+  <header><a class="brand" href="contract.html" aria-label="Trust M"><span class="logo"></span></a><span class="contract-header-label">بوابة العميل · التعاقد</span><button class="nav-action" type="button" data-sign-out>تسجيل الخروج</button></header>
+  <main class="contract-main">
+    <div class="contract-intro"><div class="eyebrow latin-text">TRUST M · YOUR NEXT CHAPTER</div><h1>خطوة أولى.<br><span>وثقة من البداية.</span></h1><p>راجع تفاصيل الاتفاق، ثم وقّع لفتح بوابتك ومتابعة مشروعك.</p></div>
+    <ol class="contract-steps" aria-label="خطوات التعاقد"><li>١ <span>تفاصيلك</span></li><li>٢ <span>مراجعة العقد</span></li><li>٣ <span>التوقيع والبدء</span></li></ol>
+    <p id="contract-message" class="contract-notice" role="status" aria-live="polite">جارٍ تحميل عقدك…</p>
+    <div id="contract-layout" class="contract-layout" hidden>
+      <article class="contract-paper"><div class="paper-top"><div><span class="eyebrow">اتفاق الإشراف وإدارة الأعمال</span><h2 id="contract-title"></h2></div><button type="button" id="print-contract" class="contract-secondary">طباعة / حفظ PDF</button></div><p class="contract-reference" id="contract-reference"></p><div id="contract-details" class="contract-details"></div><div id="contract-body" class="contract-body"></div><div id="signed-record" hidden></div></article>
+      <aside class="contract-aside"><form id="signature-form"><span class="eyebrow">الخطوة الأخيرة</span><h2>توقيعك، بداية مشروعك.</h2><p>البيانات الأساسية مأخوذة من حسابك والعقد المعتمد. راجعها قبل التوقيع.</p><label for="signer-name">اسم الموقّع بالكامل</label><input id="signer-name" name="signer" required minlength="3" maxlength="150" autocomplete="name"><label for="signature-canvas">وقّع هنا بإصبعك أو بالماوس</label><div class="signature-pad"><canvas id="signature-canvas" width="600" height="240" aria-label="مساحة رسم التوقيع"></canvas><span id="signature-hint">مساحة توقيعك</span></div><button id="clear-signature" type="button" class="signature-clear">مسح التوقيع</button><p class="signature-help">يمكنك أيضًا كتابة توقيعك إذا كان الرسم غير مناسب.</p><label for="typed-signature">التوقيع المكتوب (اختياري)</label><input id="typed-signature" maxlength="150" placeholder="اكتب اسمك كتوقيع" autocomplete="off"><label class="contract-consent"><input id="contract-consent" type="checkbox" required><span>قرأت العقد وملحقاته المعروضة، وأوافق على بنوده وأؤكد أنني مخوّل بالتوقيع.</span></label><button id="sign-contract" class="contract-primary" type="submit">توقيع العقد وفتح البوابة ←</button><p id="sign-status" role="status" aria-live="polite"></p><small>يُحفظ العقد بإصداره وتاريخ التوقيع مع حسابك.</small></form><div id="contract-complete" hidden><span class="eyebrow">تم التوقيع</span><h2>أهلًا بك في Trust M.</h2><p>نسختك الموقّعة محفوظة ويمكنك طباعتها في أي وقت.</p><a class="contract-primary" href="client.html">الانتقال إلى مشروعاتي ←</a><button class="contract-secondary" id="next-contract" hidden type="button">مراجعة العقد التالي</button></div><div class="contract-support"><strong>تحتاج تعديلًا في التفاصيل؟</strong><p>تواصل مع فريق Trust M قبل التوقيع لتحديث العقد.</p></div></aside>
+    </div>
+  </main>
+  <script src="contract.js"></script>
+</body></html>

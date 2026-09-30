@@ -1,6 +1,6 @@
 (async function(){
   const profile=await window.TrustAuth.ready;
-  if(window.TrustAuth.enabled&&!profile)return;
+  if(!profile)return;
   const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const money=value=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:0}).format(Number(value||0))+' ج.م';
   const statusLabel=status=>({planning:'تجهيز',active:'شغال',on_hold:'متوقف مؤقتًا',completed:'مكتمل',cancelled:'ملغي'}[status]||status||'غير محدد');
@@ -12,6 +12,7 @@
   try{
     const projects=window.TrustAuth.enabled?await loadProjects():demoProjects();
     if(!window.TrustAuth.enabled){const notice=document.querySelector('#client-mode');notice.hidden=false;notice.textContent='وضع مراجعة ببيانات وهمية. الحساب الحقيقي بيعرض مشروعات العميل المسجلة بس.';}
+    renderOverview(projects);
     render(projects);
   }catch(error){
     console.error(error);
@@ -19,13 +20,35 @@
   }finally{finishLoader();}
 
   async function loadProjects(){
-    const {data,error}=await window.TrustAuth.client.rpc('get_client_portal_projects');
-    if(error)throw error;
-    return (data||[]).map(project=>({...project,name:project.project_name,progress:Number(project.progress_percent||0),schedule:Array.isArray(project.phases)?project.phases:[]}));
+    const [projectsResult,overviewResult]=await Promise.all([
+      window.TrustAuth.client.rpc('get_client_portal_projects'),
+      window.TrustAuth.client.rpc('get_client_portal_overview')
+    ]);
+    if(projectsResult.error)throw projectsResult.error;
+    if(overviewResult.error&&overviewResult.error.code!=='42883')throw overviewResult.error;
+    const overview=new Map((overviewResult.data||[]).map(item=>[String(item.id),item]));
+    return Promise.all((projectsResult.data||[]).map(async project=>{
+      const extra=overview.get(String(project.id))||{};
+      let latest_photo_url='';
+      if(extra.latest_photo_path){const signed=await window.TrustAuth.client.storage.from('trust-m-documents').createSignedUrl(extra.latest_photo_path,300);latest_photo_url=signed.data?.signedUrl||'';}
+      return {...project,...extra,latest_photo_url,name:project.project_name,progress:Number(project.progress_percent||0),schedule:Array.isArray(project.phases)?project.phases:[]};
+    }));
   }
 
   function demoProjects(){
-    return [{id:'client-demo',name:'مشروع تجريبي للعميل',project_code:'DEMO-01',location:'القاهرة الجديدة',status:'active',current_phase:'التشطيبات',next_phase:'المعاينة النهائية',start_date:'2026-08-01',target_end_date:'2026-11-15',total_contract_value:350000,progress:72,schedule:[{name:'التصميم والاعتمادات',from:'2026-08-01',to:'2026-08-15',progress:100,status:'complete'},{name:'التنفيذ والتشطيبات',from:'2026-08-16',to:'2026-10-31',progress:72,status:'in_progress'},{name:'المعاينة والتسليم',from:'2026-11-01',to:'2026-11-15',progress:0,status:'planned'}]}];
+    return [{id:'client-demo',name:'مشروع فيلا الساحل',project_code:'TM/2026/18',location:'الساحل الشمالي',status:'active',current_phase:'التشطيبات الداخلية',next_phase:'المعاينة والتسليم',start_date:'2026-08-01',target_end_date:'2026-11-15',total_contract_value:1775000,last_payment_amount:300000,last_payment_date:'2026-09-12',current_balance:267405.75,next_payment_due:'2026-10-15',cost_to_date:2042405.75,latest_photo_caption:'آخر تحديث من الموقع · أعمال الدهانات مستمرة',progress:72,schedule:[{name:'التصميم والاعتمادات',from:'2026-08-01',to:'2026-08-15',progress:100,status:'complete'},{name:'التنفيذ والتشطيبات',from:'2026-08-16',to:'2026-10-31',progress:72,status:'in_progress'},{name:'المعاينة والتسليم',from:'2026-11-01',to:'2026-11-15',progress:0,status:'planned'}]}];
+  }
+
+  function renderOverview(projects){
+    const overview=document.querySelector('#client-overview');
+    if(!projects.length){overview.innerHTML='<div class="client-overview-empty">هنعرض ملخص المشروع هنا بعد ربط حسابك بمشروع.</div>';return;}
+    const project=projects[0];
+    const choices=projects.length>1?'<select class="client-project-switcher" id="client-project-switcher" aria-label="اختيار المشروع">'+projects.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('')+'</select>':'';
+    const moneyOrPending=value=>value==null||value===''?'قيد التحديث':money(value);
+    const dateOrPending=value=>value?esc(value):'لم يُحدد بعد';
+    overview.innerHTML='<div class="client-overview-head"><div><div class="eyebrow">ملخص المشروع</div><h2 id="client-overview-title">نظرة سريعة على مشروعك</h2><p>آخر المعلومات التي اعتمدها فريق Trust M لحسابك.</p></div>'+choices+'</div><div class="client-finance-strip"><div class="client-finance-item"><small>آخر دفعة مسجلة</small><strong>'+moneyOrPending(project.last_payment_amount)+'</strong><span>'+dateOrPending(project.last_payment_date)+'</span></div><div class="client-finance-item"><small>الرصيد الحالي</small><strong>'+moneyOrPending(project.current_balance)+'</strong><span>جنيه مصري · بعد آخر حركة معتمدة</span></div><div class="client-finance-item"><small>الدفعة القادمة</small><strong>'+dateOrPending(project.next_payment_due)+'</strong><span>يُحدّد حسب جدول التعاقد</span></div></div><div class="client-main-grid"><section class="client-phase-panel"><h3>أين وصلنا؟</h3><div class="client-phase-cards"><div class="client-phase-card"><small>المرحلة الحالية</small><strong>'+esc(project.current_phase||'لم تُحدد بعد')+'</strong></div><div class="client-phase-card next"><small>المرحلة القادمة</small><strong>'+esc(project.next_phase||'لم تُحدد بعد')+'</strong></div></div></section><section class="client-progress-panel"><h3>تقدم المشروع</h3><div class="client-progress-top"><span>نسبة الإنجاز الإجمالية</span><strong>'+Number(project.progress||0)+'%</strong></div><div class="client-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Number(project.progress||0)+'"><span style="width:'+Math.max(0,Math.min(100,Number(project.progress||0)))+'%"></span></div><div class="client-progress-foot"><span>التكلفة المسجلة: '+moneyOrPending(project.cost_to_date)+'</span><span>التسليم: '+dateOrPending(project.target_end_date)+'</span></div><a class="client-account-link" href="#projects">افتح كشف الحساب والمراحل</a></section><section class="client-feed-panel"><h3>آخر تحديث من الموقع</h3><div class="client-feed-frame">'+(project.latest_photo_url?'<img src="'+esc(project.latest_photo_url)+'" alt="آخر صورة من موقع المشروع">':'<div class="client-feed-placeholder"><span>✦</span><strong>لا توجد صورة مرفوعة بعد</strong><p>ستظهر هنا آخر صورة أو تحديث يرفعه فريق الموقع.</p></div>')+'</div><p class="client-feed-caption">'+esc(project.latest_photo_caption||'تحديثات الموقع ستظهر هنا بعد اعتمادها.')+'</p></section></div>';
+    const switcher=overview.querySelector('#client-project-switcher');
+    if(switcher)switcher.onchange=()=>{const selected=projects.find(p=>String(p.id)===switcher.value);if(selected){renderOverview([selected,...projects.filter(p=>p!==selected)]);}};
   }
 
   function render(projects){

@@ -79,7 +79,7 @@
     try{
       for(let attempt=0;attempt<3;attempt++){
         const row=await remoteRow();
-        const next=structuredClone(row?.state||root.TrustFinanceSeed);
+        const next=structuredClone(row?.state||{projects:[],payments:[],expenses:[],charges:[],invoices:[],quotes:[],blocks:root.TrustFinanceSeed?.blocks||[]});
         mutate(next);
         if(file&&!uploaded){
           const {error:uploadError}=await sb.storage.from('trust-m-documents').upload(file.id,file.blob,{upsert:false});

@@ -4,15 +4,16 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#11120f">
   <meta name="description" content="بوابة عميل Trust M لمتابعة تقدم المشروع.">
   <title>Trust M | بوابة العميل</title>
-  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
-  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js?v=20260930"></script>
+  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css"><link rel="stylesheet" href="client.css">
+  <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js?v=20261003"></script>
 </head>
 <body class="client-page">
   <div id="loader" role="status" aria-label="بنفتح بوابة العميل"><div class="loading-inner"><div class="logo loading-logo" role="img" aria-label="شعار Trust M"></div><div class="loading-rule"></div><p>بوابة العميل</p></div></div>
-  <header><a href="#projects" class="brand" aria-label="Trust M"><span class="logo"></span></a><nav aria-label="بوابة العميل"><a class="active" href="#projects">مشروعاتي</a><button class="nav-action auth-only" type="button" data-sign-out>تسجيل الخروج</button></nav><div class="owner"><span>متابعة المشروع</span><b>ع</b></div></header>
+  <header><a href="#projects" class="brand" aria-label="Trust M"><span class="logo"></span></a><nav aria-label="بوابة العميل"><a class="active" href="#projects">مشروعاتي</a><a href="contract.html">عقودي</a><button class="nav-action auth-only" type="button" data-sign-out>تسجيل الخروج</button></nav><div class="owner"><span>متابعة المشروع</span><b>ع</b></div></header>
   <main>
     <div class="heading"><div><div class="eyebrow latin-text">TRUST M · CLIENT PORTAL</div><h1 id="client-greeting">أهلًا بيك<span>.</span></h1><p>تابع تقدم مشروعك والمراحل المسجلة ومواعيد التنفيذ.</p></div><div class="date" id="client-date"></div></div>
     <p class="demo-notice" id="client-mode" hidden></p>
+    <section id="client-overview" class="client-overview" aria-labelledby="client-overview-title"></section>
     <section id="projects">
       <div class="section-top project-title"><div><div class="eyebrow">متابعة التنفيذ</div><h2>مشروعاتك <span class="count" id="client-project-count">0</span></h2></div><span class="subtle">المعلومات المعروضة خاصة بحسابك</span></div>
       <div id="client-project-list"></div>
