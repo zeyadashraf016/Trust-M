@@ -76,3 +76,4 @@ header{position:sticky;top:0;z-index:30;background:rgba(17,18,15,.94);backdrop-f
 .client-privacy-note{margin-top:24px;padding:14px 16px;border-inline-start:2px solid var(--gold);background:var(--surface-raised);color:var(--muted);font-size:13px}
 @media(max-width:800px){.client-project-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.client-project-meta{grid-template-columns:1fr}.client-page header nav{justify-content:flex-start}}
+.login-brand .logo{mix-blend-mode:lighten}

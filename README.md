@@ -1,5 +1,7 @@
 # Trust M portal
 
+> **Preview-only build.** `supabase-config.js` sets `PREVIEW_ONLY=true`, so no database is needed: every page opens with built-in sample data and the login page lists all portals. To go live again, set it to `false` and add `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` on Vercel.
+
 This folder is the complete static portal. Upload its contents to the root of the Trust-M GitHub repository. The connected Vercel project can deploy it without a build command.
 
 ## Pages

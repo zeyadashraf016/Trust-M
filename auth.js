@@ -2,7 +2,7 @@
   const roleRoutes={lamiaa_owner:'index.html',accountant:'accounting.html',amr_partner:'amr.html',technician:'technician.html',client:'client.html'};
   const pageRole=document.documentElement.dataset.requiredRole;
   const loginPage=/\/(login(?:\.html)?|activate-account(?:\.html)?)\/?$/.test(location.pathname);
-  const localReview=['localhost','127.0.0.1',''].includes(location.hostname)||location.protocol==='file:';
+  const localReview=window.TRUST_M_PREVIEW===true||['localhost','127.0.0.1',''].includes(location.hostname)||location.protocol==='file:';
   let sb=null,bootstrapPromise=null;
 
   const api={

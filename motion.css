@@ -81,3 +81,9 @@
   .m-pending,.m-await{opacity:1!important;transform:none!important;--pct:var(--pct-final,0)!important}
   .m-in,.m-pop{animation:none!important}
 }
+
+/* Preview portal chooser on the login page */
+.preview-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.preview-links a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:10px 12px;text-align:center;font-size:14px;border:1px solid var(--line-soft,#393b32);border-radius:4px;background:var(--surface-raised,#22231e);color:var(--text);transition:border-color .15s,color .15s,background-color .15s}
+.preview-links a:hover,.preview-links a:focus-visible{border-color:var(--gold);color:var(--gold);background:#29271f}
+@media(max-width:520px){.preview-links{grid-template-columns:1fr}}

@@ -1,4 +1,12 @@
 (function(){
+  if(window.TRUST_M_PREVIEW){
+    document.querySelector('#preview-portals').hidden=false;
+    document.querySelector('#login-form').hidden=true;
+    document.querySelector('#login-help').hidden=true;
+    document.querySelector('.finance-note').hidden=true;
+    document.querySelector('#session-message').hidden=true;
+    return;
+  }
   const form=document.querySelector('#login-form'),status=document.querySelector('#login-status'),session=document.querySelector('#session-message');
   const messages={NOT_CONFIGURED:'نسخة المراجعة مش متوصلة بقاعدة البيانات لسه.',CONFIG_UNAVAILABLE:'إعدادات الاتصال بقاعدة البيانات مش موجودة على Vercel. تواصل مع المسؤول.',ACCOUNT_INACTIVE:'الحساب ده متوقف. تواصل مع لمياء.','Invalid login credentials':'البريد الإلكتروني أو كلمة المرور مش صحيحة.','Email not confirmed':'أكد البريد الإلكتروني الأول، وبعدها جرّب تاني.'};
   const friendly=error=>messages[error?.message]||'تعذر تسجيل الدخول دلوقتي. جرّب تاني بعد شوية.';
