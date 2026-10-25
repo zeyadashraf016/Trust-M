@@ -4,9 +4,9 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#11120f"><meta name="description" content="لوحة عمرو لمتابعة مشروعات ومصروفات تشغيل Trust M.">
   <title>Trust M | لوحة عمرو</title>
-  <link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
+  <link rel="preload" href="assets/ibm-plex-arabic-400.woff" as="font" type="font/woff" crossorigin><link rel="preload" href="assets/trust-m-logo.webp" as="image"><link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="finance.css">
   <script src="assets/supabase-2.49.4.js"></script><script src="supabase-config.js"></script><script src="auth.js?v=20260930"></script>
-</head>
+<link rel="stylesheet" href="motion.css"><script src="motion.js" defer></script></head>
 <body class="amr-dashboard">
   <div id="loader" role="status" aria-label="بنفتح لوحة عمرو"><div class="loading-inner"><div class="logo loading-logo" role="img" aria-label="شعار Trust M"></div><div class="loading-rule"></div><p>لوحة عمرو</p></div></div>
   <header><a href="#overview" class="brand" aria-label="Trust M"><span class="logo"></span></a><nav class="compact-nav" aria-label="أقسام لوحة عمرو"><a href="#overview" class="active">نظرة عامة</a><a href="#projects">المشروعات <span id="amr-project-count">0</span></a><a href="#operations">مصروفات التشغيل</a><a href="partner-account.html">كشف حسابي</a><button class="nav-action auth-only" type="button" data-sign-out>تسجيل الخروج</button></nav><div class="owner"><span>عرض ومتابعة</span><b>ع</b></div></header>

@@ -56,7 +56,7 @@
     document.querySelector('#project-count').textContent=projects.length;
     document.querySelector('#project-subtitle').textContent=projects.length+' مشروع · '+activeTech+' فني';
     document.querySelector('#collection-rate').innerHTML=rate.toFixed(1)+'<span>%</span>';
-    document.querySelector('#collection-donut').style.background='conic-gradient(var(--gold) 0 '+Math.min(100,rate)+'%,#3c3d34 '+Math.min(100,rate)+'% 100%)';
+    document.querySelector('#collection-donut').style.setProperty('--pct-final',Math.min(100,rate).toFixed(2));
     document.querySelector('#collection-donut').setAttribute('aria-label','تم تحصيل '+rate.toFixed(1)+' في المية');
     document.querySelector('#financial-list').innerHTML=[
       ['تحصيلات العملاء',paid,'gold-dot'],['المتبقي عند العملاء',outstanding,'gray-dot'],
@@ -87,13 +87,12 @@
   function renderProjects(projects,mode){
     const list=document.querySelector('#project-list');
     if(!projects.length){list.innerHTML='<section class="panel empty-state"><strong>لسه مفيش مشروعات</strong><p>أضيفي أول مشروع في قاعدة البيانات عشان يظهر هنا.</p></section>';return;}
-    list.innerHTML=projects.map((project,index)=>'<article class="project panel clickable-project" id="project-'+esc(project.id)+'" data-project="'+esc(project.id)+'" tabindex="0" role="button" aria-haspopup="dialog"><div class="project-head"><div class="project-number">'+String(index+1).padStart(2,'0')+'</div><div class="project-name"><h3>'+esc(project.name)+'</h3><p>'+esc(project.client)+' <span>·</span> '+esc(project.location)+'</p></div><span class="status '+(project.status==='active'?'on-track':'warning')+'">'+esc(statusLabel(project.status))+'</span></div><div class="progress-label"><span>نسبة الإنجاز</span><strong>'+project.progress+'%</strong></div><div class="progress" role="progressbar" aria-label="نسبة إنجاز '+esc(project.name)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+project.progress+'"><span style="width:'+Math.max(0,Math.min(100,project.progress))+'%"></span></div><div class="phases"><div><small>المرحلة الحالية</small><span>'+esc(project.phase)+'</span></div><span class="phase-arrow">←</span><div><small>المرحلة الجاية</small><span>'+esc(project.next)+'</span></div></div><dl class="project-finance">'+[
+    list.innerHTML=projects.map((project,index)=>'<article class="project panel clickable-project" id="project-'+esc(project.id)+'" data-project="'+esc(project.id)+'"><div class="project-head"><div class="project-number">'+String(index+1).padStart(2,'0')+'</div><div class="project-name"><h3>'+esc(project.name)+'</h3><p>'+esc(project.client)+' <span>·</span> '+esc(project.location)+'</p></div><span class="status '+(project.status==='active'?'on-track':'warning')+'">'+esc(statusLabel(project.status))+'</span></div><div class="progress-label"><span>نسبة الإنجاز</span><strong>'+project.progress+'%</strong></div><div class="progress" role="progressbar" aria-label="نسبة إنجاز '+esc(project.name)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+project.progress+'"><span style="width:'+Math.max(0,Math.min(100,project.progress))+'%"></span></div><div class="phases"><div><small>المرحلة الحالية</small><span>'+esc(project.phase)+'</span></div><span class="phase-arrow">←</span><div><small>المرحلة الجاية</small><span>'+esc(project.next)+'</span></div></div><dl class="project-finance">'+[
       ['قيمة التعاقد',project.contract],['المتحصل',project.paid],['المتبقي عند العميل',Math.max(0,project.contract-project.paid)],['التكلفة لحد دلوقتي',project.cost],['تكلفة بداية المرحلة الجاية',project.nextCost],['التكلفة النهائية المتوقعة',project.final]
-    ].map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+fmt(value)+'</dd></div>').join('')+'</dl><div class="project-bottom"><span>الربح المتوقع <strong>'+money(project.contract-project.final)+'</strong></span><span>'+project.team+' فني</span></div><button class="project-open" type="button">افتح التفاصيل والجدول الزمني</button></article>').join('');
+    ].map(([label,value])=>'<div><dt>'+label+'</dt><dd>'+fmt(value)+'</dd></div>').join('')+'</dl><div class="project-bottom"><span>الربح المتوقع <strong>'+money(project.contract-project.final)+'</strong></span><span>'+project.team+' فني</span></div><button class="project-open" type="button" aria-haspopup="dialog">افتح التفاصيل والجدول الزمني</button></article>').join('');
     list.querySelectorAll('[data-project]').forEach(card=>{
       const open=()=>openProject(projects.find(project=>String(project.id)===card.dataset.project),mode);
       card.onclick=event=>{if(!event.target.closest('button'))open();};
-      card.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();open();}};
       card.querySelector('.project-open').onclick=open;
     });
   }

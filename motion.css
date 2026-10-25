@@ -1,0 +1,83 @@
+/* Trust M motion layer.
+   Purely additive: every rule is either gated by prefers-reduced-motion or by a
+   class that motion.js adds. Remove this file and motion.js and the portal looks
+   exactly as before. Animations use transform and opacity only. */
+
+@property --pct{syntax:'<number>';inherits:false;initial-value:0}
+@property --progress{syntax:'<number>';inherits:false;initial-value:0}
+
+/* Collection donut now reads one number, so it can sweep in. */
+.donut{--pct:var(--pct-final,0);background:conic-gradient(var(--gold) 0 calc(var(--pct)*1%),#3c3d34 calc(var(--pct)*1%) 100%)}
+
+@keyframes m-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes m-fade{from{opacity:0}to{opacity:1}}
+@keyframes m-dialog{from{opacity:0;transform:translateY(10px) scale(.975)}to{opacity:1;transform:none}}
+@keyframes m-pop{0%{opacity:0;transform:translateY(-4px)}60%{opacity:1;transform:translateY(1px)}100%{transform:none}}
+@keyframes m-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
+@media (prefers-reduced-motion:no-preference){
+  /* 1. Section reveal (class names are added by motion.js) */
+  .m-pending{opacity:0;transform:translateY(14px)}
+  .m-in{animation:m-rise .65s var(--ease,cubic-bezier(.2,.7,.2,1)) both;animation-delay:calc(var(--i,0)*70ms)}
+
+  /* 2. Fills: progress bars, balance tracks */
+  .m-fill{transform-origin:left;transition:transform 1s var(--ease,cubic-bezier(.2,.7,.2,1));transition-delay:calc(var(--i,0)*70ms)}
+  [dir=rtl] .m-fill{transform-origin:right}
+  .m-fill.m-await{transform:scaleX(0)}
+
+  /* 3. Donut and progress ring sweep */
+  .donut.m-donut{transition:--pct 1.4s var(--ease,cubic-bezier(.2,.7,.2,1))}
+  .donut.m-await{--pct:0}
+  .progress-ring.m-ring{transition:--progress 1.2s var(--ease,cubic-bezier(.2,.7,.2,1))}
+  .progress-ring.m-await{--progress:0!important}
+
+  /* 4. Bar chart grows from the baseline, labels fade in after */
+  .bar.m-bar{transform-origin:bottom;transition:transform .8s var(--ease,cubic-bezier(.2,.7,.2,1));transition-delay:calc(var(--i,0)*55ms)}
+  .bar.m-bar.m-await{transform:scaleY(0)}
+  .bar.m-bar>span{transition:opacity .4s ease calc(.55s + var(--i,0)*55ms)}
+  .bar.m-bar.m-await>span{opacity:0}
+
+  /* 5. Timeline bars draw in */
+  .gantt-bar.m-gantt{transform-origin:left;transition:transform .8s var(--ease,cubic-bezier(.2,.7,.2,1));transition-delay:calc(var(--i,0)*90ms + .15s)}
+  .gantt-bar.m-gantt.m-await{transform:scaleX(0)}
+  .today-line{animation:m-fade .6s ease .9s both}
+
+  /* 6. Dialogs */
+  dialog[open]{animation:m-dialog .3s var(--ease,cubic-bezier(.2,.7,.2,1))}
+  dialog[open]::backdrop{animation:m-fade .3s ease}
+
+  /* 7. Hover and press feedback on cards (pointer devices only) */
+  @media (hover:hover){
+    .clickable-project,.approval-card,.submission-card,.document-card{transition:transform .25s var(--ease,cubic-bezier(.2,.7,.2,1)),border-color .2s,box-shadow .25s}
+    .clickable-project:hover,.approval-card:hover,.submission-card:hover{transform:translateY(-2px);border-color:#8e7952;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 18px 44px rgba(0,0,0,.28)}
+  }
+  .clickable-project:active{transform:translateY(0)}
+  .project-open{transition:color .15s,letter-spacing .2s}
+  .project-open:hover{color:#e4c98f}
+
+  /* 8. Sliding nav indicator (motion.js adds the <i class="m-ink">) */
+  .m-ink-nav{position:relative}
+  .m-ink-nav a{border-bottom-color:transparent!important}
+  .m-ink{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--gold);opacity:0;pointer-events:none}
+  .m-ink.m-ink-ready{transition:transform .35s var(--ease,cubic-bezier(.2,.7,.2,1)),width .35s var(--ease,cubic-bezier(.2,.7,.2,1)),opacity .2s}
+
+  /* 9. Status and error messages pop in */
+  .m-pop{animation:m-pop .45s var(--ease,cubic-bezier(.2,.7,.2,1))}
+
+  /* 10. Loading skeletons: shown only while a container is still empty */
+  #kpis:empty,#project-list:empty,#client-project-list:empty,#client-overview:empty,#amr-project-list:empty,
+  #attention-list:empty,#balance-chart:empty,#technician-list:empty,#financial-list:empty{
+    border-radius:6px;
+    background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.055) 50%,transparent 70%) 200% 0/200% 100% no-repeat,var(--surface-panel,#1b1c18);
+    animation:m-shimmer 1.5s linear 8}
+  #kpis:empty{min-height:236px}
+  #project-list:empty,#client-project-list:empty,#amr-project-list:empty{min-height:300px}
+  #client-overview:empty{min-height:260px}
+  #attention-list:empty,#balance-chart:empty,#technician-list:empty{min-height:140px}
+  #financial-list:empty{min-height:120px}
+}
+
+@media print{
+  .m-pending,.m-await{opacity:1!important;transform:none!important;--pct:var(--pct-final,0)!important}
+  .m-in,.m-pop{animation:none!important}
+}
